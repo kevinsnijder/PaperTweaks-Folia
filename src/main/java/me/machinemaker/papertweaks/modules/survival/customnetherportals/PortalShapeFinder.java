@@ -102,7 +102,7 @@ class PortalShapeFinder {
             final ToIntFunction<Block> flatFunction = this.axis == IgniteListener.Axis.X ? Block::getX : Block::getZ;
 
             final Block maxFlatBlock = Collections.max(this.portalInterior, Comparator.comparingInt(flatFunction));
-            final Block minFlatBlock = Collections.max(this.portalInterior, Comparator.comparingInt(flatFunction));
+            final Block minFlatBlock = Collections.min(this.portalInterior, Comparator.comparingInt(flatFunction));
 
             if (flatFunction.applyAsInt(maxFlatBlock) - flatFunction.applyAsInt(minFlatBlock) > config.maxPortalWidth) {
                 return false;
