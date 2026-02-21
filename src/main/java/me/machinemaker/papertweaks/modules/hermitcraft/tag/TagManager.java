@@ -28,6 +28,7 @@ import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Team;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
@@ -36,13 +37,15 @@ import static net.kyori.adventure.text.format.NamedTextColor.RED;
 @Singleton
 class TagManager {
 
-    final Team tagTeam = Scoreboards.getTeam("tag/redcolor", RED);
-    final Objective tagCounter = Scoreboards.getDummyObjective("tg_timesTagged", text("Times Tagged"));
+    final Team tagTeam;
+    final Objective tagCounter;
     private final Config config;
 
     @Inject
     TagManager(final Config config) {
         this.config = config;
+        this.tagTeam = Scoreboards.getTeam("tag/redcolor", RED);
+        this.tagCounter = Scoreboards.getDummyObjective("tg_timesTagged", text("Times Tagged"));
     }
 
     boolean setAsIt(final CommandSender from, final Player player) {
@@ -54,8 +57,12 @@ class TagManager {
             from.sendMessage(translatable("modules.tag.tag.fail.already-it", RED, text(player.getName())));
             return false;
         }
-        this.tagTeam.addEntry(player.getName());
-        this.tagCounter.getScore(player.getName()).setScore(this.tagCounter.getScore(player.getName()).getScore() + 1);
+        if (this.tagTeam != null) {
+            this.tagTeam.addEntry(player.getName());
+        }
+        if (this.tagCounter != null) {
+            this.tagCounter.getScore(player.getName()).setScore(this.tagCounter.getScore(player.getName()).getScore() + 1);
+        }
         Tag.IT.setTo(player, true);
         Tag.COOLDOWN.setTo(player, System.currentTimeMillis() + (this.config.timeBetweenTags * 1000L));
         player.displayName(player.displayName().color(RED));
@@ -72,7 +79,9 @@ class TagManager {
     }
 
     void removeAsIt(final Player player) {
-        this.tagTeam.removeEntry(player.getName());
+        if (this.tagTeam != null) {
+            this.tagTeam.removeEntry(player.getName());
+        }
         player.displayName(null);
         player.playerListName(null);
         Tag.IT.remove(player);

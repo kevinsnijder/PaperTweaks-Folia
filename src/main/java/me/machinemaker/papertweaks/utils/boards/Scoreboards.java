@@ -31,6 +31,19 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 public final class Scoreboards {
 
+    private static final boolean IS_FOLIA;
+
+    static {
+        boolean isFolia;
+        try {
+            Class.forName("io.papermc.paper.threadedregions.RegionizedServer");
+            isFolia = true;
+        } catch (ClassNotFoundException e) {
+            isFolia = false;
+        }
+        IS_FOLIA = isFolia;
+    }
+
     private Scoreboards() {
     }
 
@@ -42,7 +55,11 @@ public final class Scoreboards {
         return manager().getMainScoreboard();
     }
 
-    public static Team getTeam(final String name, final NamedTextColor color) {
+    public static @Nullable Team getTeam(final String name, final NamedTextColor color) {
+        if (IS_FOLIA) {
+            // Folia doesn't support main scoreboard operations
+            return null;
+        }
         @Nullable Team team = main().getTeam(name);
         if (team == null) {
             team = main().registerNewTeam(name);
@@ -51,7 +68,11 @@ public final class Scoreboards {
         return team;
     }
 
-    public static Objective getDummyObjective(final String name, final Component displayName) {
+    public static @Nullable Objective getDummyObjective(final String name, final Component displayName) {
+        if (IS_FOLIA) {
+            // Folia doesn't support main scoreboard operations
+            return null;
+        }
         @Nullable Objective objective = main().getObjective(name);
         if (objective == null) {
             objective = main().registerNewObjective(name, Criteria.DUMMY, displayName);

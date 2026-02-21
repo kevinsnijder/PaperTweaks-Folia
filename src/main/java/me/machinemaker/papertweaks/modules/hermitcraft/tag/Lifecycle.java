@@ -44,7 +44,9 @@ class Lifecycle extends ModuleLifecycle {
     @Override
     public void onDisable(final boolean isShutdown) {
         if (!isShutdown) {
-            DisplaySlot.NONE.changeFor(this.tagManager.tagCounter);
+            if (this.tagManager.tagCounter != null) {
+                DisplaySlot.NONE.changeFor(this.tagManager.tagCounter);
+            }
             for (final Player player : Bukkit.getOnlinePlayers()) {
                 if (Tag.IT.has(player)) {
                     this.tagManager.removeAsIt(player);

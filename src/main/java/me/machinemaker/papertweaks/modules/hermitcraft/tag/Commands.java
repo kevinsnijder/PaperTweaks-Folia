@@ -80,7 +80,9 @@ class Commands extends ConfiguredModuleCommand {
                 .required("slot", enumParser(DisplaySlot.class))
                 .handler(this.sync(context -> {
                     final DisplaySlot slot = context.get("slot");
-                    if (slot.isDisplayedOn(this.tagManager.tagCounter)) {
+                    if (this.tagManager.tagCounter == null) {
+                        context.sender().sendMessage(translatable("modules.tag.commands.counter.unavailable", RED));
+                    } else if (slot.isDisplayedOn(this.tagManager.tagCounter)) {
                         context.sender().sendMessage(translatable("modules.tag.commands.counter.fail", RED));
                     } else {
                         slot.changeFor(this.tagManager.tagCounter);
