@@ -3,7 +3,7 @@
  *
  * PaperTweaks, a performant replacement for the VanillaTweaks datapacks.
  *
- * Copyright (C) 2021-2025 Machine_Maker
+ * Copyright (C) 2021-2026 Machine_Maker
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@ import me.machinemaker.papertweaks.menus.parts.enums.PreviewableMenuEnum;
 import me.machinemaker.papertweaks.settings.ModuleSettings;
 import me.machinemaker.papertweaks.settings.SettingKey;
 import me.machinemaker.papertweaks.settings.types.PlayerSetting;
+import me.machinemaker.papertweaks.utils.SchedulerUtil;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -104,7 +105,7 @@ class Settings extends ModuleSettings<Player, PlayerSetting<?>> {
                     bossBar.color(config.bossBarColor);
                     bossBar.progress(1f);
                     player.showBossBar(bossBar);
-                    Bukkit.getScheduler().runTaskLater(plugin, () -> player.hideBossBar(bossBar), 60L);
+                    SchedulerUtil.runEntityTaskLater(plugin, player, () -> player.hideBossBar(bossBar), null, 60L);
                 }
             }
 
@@ -112,23 +113,20 @@ class Settings extends ModuleSettings<Player, PlayerSetting<?>> {
             public void preview(final Player player) {
                 final BossBar bossBar = BOSS_BAR_PREVIEW.apply(config);
                 player.showBossBar(bossBar);
-                Bukkit.getScheduler().runTaskLater(plugin, () -> player.hideBossBar(bossBar), 100L);
+                SchedulerUtil.runEntityTaskLater(plugin, player, () -> player.hideBossBar(bossBar), null, 100L);
             }
         },
         ACTION_BAR("Action Bar") {
             @Override
             void notify(final Player player, final SleepContext context, final boolean isBedLeave) {
                 if (isBedLeave) return; // skip because runnable handles the task
-                new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        if (context.shouldSkip() || context.sleepingPlayers().isEmpty()) {
-                            this.cancel();
-                            return;
-                        }
-                        sendNotification(player, context.sleepingCount(), context.totalPlayerCount());
+                SchedulerUtil.runTaskTimerAsynchronously(plugin, task -> {
+                    if (context.shouldSkip() || context.sleepingPlayers().isEmpty()) {
+                        task.cancel();
+                        return;
                     }
-                }.runTaskTimerAsynchronously(plugin, 1L, 10L);
+                    sendNotification(player, context.sleepingCount(), context.totalPlayerCount());
+                }, 50L, 500L); // delay and period in milliseconds (50ms, 500ms = ~10 ticks)
             }
 
             @Override

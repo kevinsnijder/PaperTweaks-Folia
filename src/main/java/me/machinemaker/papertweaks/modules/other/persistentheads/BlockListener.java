@@ -3,7 +3,7 @@
  *
  * PaperTweaks, a performant replacement for the VanillaTweaks datapacks.
  *
- * Copyright (C) 2020-2025 Machine_Maker
+ * Copyright (C) 2020-2026 Machine_Maker
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@ import me.machinemaker.papertweaks.modules.ModuleListener;
 import me.machinemaker.papertweaks.pdc.PDCKey;
 import me.machinemaker.papertweaks.pdc.PaperDataTypes;
 import me.machinemaker.papertweaks.utils.Keys;
+import me.machinemaker.papertweaks.utils.SchedulerUtil;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -153,7 +154,7 @@ class BlockListener implements ModuleListener {
                 });
                 if (!edited) return;
 
-                Bukkit.getScheduler().runTaskLater(this.plugin, () -> block.getWorld().dropItemNaturally(block.getLocation(), stack), 1L);
+                SchedulerUtil.runAtLocationLater(this.plugin, block.getLocation(), () -> block.getWorld().dropItemNaturally(block.getLocation(), stack), 1L);
                 block.setType(Material.AIR);
                 if (shouldCancelEvent) requireNonNull(event, "can't cancel a null event").setCancelled(true);
                 block.getWorld().getBlockAt(block.getLocation()).getState().update(true, true);

@@ -3,7 +3,7 @@
  *
  * PaperTweaks, a performant replacement for the VanillaTweaks datapacks.
  *
- * Copyright (C) 2021-2025 Machine_Maker
+ * Copyright (C) 2021-2026 Machine_Maker
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,18 +26,18 @@ import java.util.UUID;
 import me.machinemaker.papertweaks.cloud.cooldown.CommandCooldownManager;
 import me.machinemaker.papertweaks.cloud.dispatchers.CommandDispatcher;
 import me.machinemaker.papertweaks.utils.runnables.TeleportRunnable;
+import me.machinemaker.papertweaks.utils.SchedulerUtil;
 import net.kyori.adventure.audience.Audience;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitTask;
 
 import static net.kyori.adventure.text.Component.translatable;
 import static net.kyori.adventure.text.format.NamedTextColor.RED;
 
 public class BackTeleportRunnable extends TeleportRunnable {
 
-    static final Map<UUID, BukkitTask> AWAITING_TELEPORT = Maps.newHashMap();
+    static final Map<UUID, SchedulerUtil.Task> AWAITING_TELEPORT = Maps.newHashMap();
     @Inject
     private static CommandCooldownManager<CommandDispatcher, UUID> cooldownManager;
     @Inject

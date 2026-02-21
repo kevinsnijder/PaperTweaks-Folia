@@ -3,7 +3,7 @@
  *
  * PaperTweaks, a performant replacement for the VanillaTweaks datapacks.
  *
- * Copyright (C) 2021-2025 Machine_Maker
+ * Copyright (C) 2021-2026 Machine_Maker
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,14 +19,16 @@
  */
 package me.machinemaker.papertweaks.utils.runnables;
 
+import me.machinemaker.papertweaks.utils.SchedulerUtil;
 import org.bukkit.entity.Item;
-import org.bukkit.scheduler.BukkitRunnable;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
-public abstract class ItemDropFinder extends BukkitRunnable {
+public abstract class ItemDropFinder implements Runnable {
 
     private final Item item;
     private final long maxRuns;
     private long counter;
+    private SchedulerUtil.Task task;
 
     protected ItemDropFinder(final Item item, final long maxRuns) {
         this.item = item;
@@ -57,6 +59,16 @@ public abstract class ItemDropFinder extends BukkitRunnable {
         }
 
         this.counter++;
+    }
+
+    public final void setTask(final SchedulerUtil.Task task) {
+        this.task = task;
+    }
+
+    protected final void cancel() {
+        if (this.task != null) {
+            this.task.cancel();
+        }
     }
 
     public boolean failCheck(final Item item) {

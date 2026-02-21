@@ -3,7 +3,7 @@
  *
  * PaperTweaks, a performant replacement for the VanillaTweaks datapacks.
  *
- * Copyright (C) 2021-2025 Machine_Maker
+ * Copyright (C) 2021-2026 Machine_Maker
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import me.machinemaker.papertweaks.modules.ModuleListener;
 import me.machinemaker.papertweaks.utils.Entities;
+import me.machinemaker.papertweaks.utils.SchedulerUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Sound;
@@ -78,10 +79,10 @@ class PlayerListener implements ModuleListener {
     private void teleportPlayer(final Player player, final Location start, final Collection<Marker> possibleLocations) {
         if (!possibleLocations.isEmpty()) {
             final Marker next = Collections.min(possibleLocations, Comparator.comparingDouble(value -> value.getLocation().distanceSquared(start)));
-            Bukkit.getScheduler().runTaskLater(this.plugin, () -> {
+            SchedulerUtil.runEntityTaskLater(this.plugin, player, () -> {
                 player.teleport(new Location(next.getWorld(), next.getLocation().getX(), next.getLocation().getBlockY() + 1D, next.getLocation().getZ(), player.getLocation().getYaw(), player.getLocation().getPitch()));
                 player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS, 0.4f, 1f);
-            }, 1L);
+            }, null, 1L);
         }
     }
 }

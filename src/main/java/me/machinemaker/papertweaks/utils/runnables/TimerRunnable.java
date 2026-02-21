@@ -3,7 +3,7 @@
  *
  * PaperTweaks, a performant replacement for the VanillaTweaks datapacks.
  *
- * Copyright (C) 2021-2025 Machine_Maker
+ * Copyright (C) 2021-2026 Machine_Maker
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,43 +20,42 @@
 package me.machinemaker.papertweaks.utils.runnables;
 
 import com.google.inject.Inject;
-import org.bukkit.Bukkit;
+import me.machinemaker.papertweaks.utils.SchedulerUtil;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitTask;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public abstract class TimerRunnable implements Runnable {
 
     protected final Plugin plugin;
-    private @Nullable BukkitTask currentTask;
+    private SchedulerUtil.Task currentTask;
 
     @Inject
     protected TimerRunnable(final Plugin plugin) {
         this.plugin = plugin;
     }
 
-    private static void checkScheduled(final @Nullable BukkitTask task) {
+    private static void checkScheduled(final SchedulerUtil.Task task) {
         if (task == null || task.isCancelled()) {
             throw new IllegalStateException("Not scheduled yet");
         }
     }
 
-    private static void checkNotYetScheduled(final @Nullable BukkitTask task) {
+    private static void checkNotYetScheduled(final SchedulerUtil.Task task) {
         if (task != null && !task.isCancelled()) {
-            throw new IllegalStateException("Already scheduled as " + task.getTaskId());
+            throw new IllegalStateException("Already scheduled");
         }
     }
 
-    public synchronized BukkitTask runTaskTimer(final long delay, final long period) throws IllegalStateException {
+    public synchronized SchedulerUtil.Task runTaskTimer(final long delay, final long period) throws IllegalStateException {
         checkNotYetScheduled(this.currentTask);
-        this.currentTask = Bukkit.getScheduler().runTaskTimer(this.plugin, this, delay, period);
+        this.currentTask = SchedulerUtil.runTaskTimer(this.plugin, task -> this.run(), delay, period);
         return this.currentTask;
     }
 
-    public synchronized BukkitTask runTaskTimerAsynchronously(final long delay, final long period) throws IllegalStateException {
+    public synchronized SchedulerUtil.Task runTaskTimerAsynchronously(final long delay, final long period) throws IllegalStateException {
         checkNotYetScheduled(this.currentTask);
         this.start();
-        this.currentTask = Bukkit.getScheduler().runTaskTimerAsynchronously(this.plugin, this, delay, period);
+        this.currentTask = SchedulerUtil.runTaskTimerAsynchronously(this.plugin, task -> this.run(), delay, period);
         return this.currentTask;
     }
 
@@ -64,14 +63,12 @@ public abstract class TimerRunnable implements Runnable {
     }
 
     public synchronized void cancel() {
-        try {
-            Bukkit.getScheduler().cancelTask(this.getTaskId());
-        } catch (final IllegalStateException ignored) {
+        if (this.currentTask != null) {
+            this.currentTask.cancel();
         }
     }
 
-    public synchronized int getTaskId() throws IllegalStateException {
-        checkScheduled(this.currentTask);
-        return this.currentTask.getTaskId();
+    public synchronized boolean isCancelled() {
+        return this.currentTask == null || this.currentTask.isCancelled();
     }
 }

@@ -3,7 +3,7 @@
  *
  * PaperTweaks, a performant replacement for the VanillaTweaks datapacks.
  *
- * Copyright (C) 2021-2025 Machine_Maker
+ * Copyright (C) 2021-2026 Machine_Maker
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ import java.util.function.Consumer;
 import me.machinemaker.papertweaks.cloud.dispatchers.CommandDispatcher;
 import me.machinemaker.papertweaks.cloud.dispatchers.PlayerCommandDispatcher;
 import me.machinemaker.papertweaks.cloud.parsers.ParserFactory;
-import org.bukkit.Bukkit;
+import me.machinemaker.papertweaks.utils.SchedulerUtil;
 import org.bukkit.entity.Player;
 import org.incendo.cloud.Command;
 import org.incendo.cloud.context.CommandContext;
@@ -48,7 +48,7 @@ public abstract class PaperTweaksCommand {
 
     protected final <C> CommandExecutionHandler<C> sync(final BiConsumer<CommandContext<C>, Player> playerTaskConsumer) {
         return context -> {
-            Bukkit.getScheduler().runTask(this.manager.owningPlugin(), () -> {
+            SchedulerUtil.runTask(this.manager.owningPlugin(), () -> {
                 final Player player = PlayerCommandDispatcher.from(context);
                 playerTaskConsumer.accept(context, player);
             });
@@ -57,7 +57,7 @@ public abstract class PaperTweaksCommand {
 
     protected final <C> CommandExecutionHandler<C> sync(final Consumer<CommandContext<C>> taskConsumer) {
         return context -> {
-            Bukkit.getScheduler().runTask(this.manager.owningPlugin(), () -> taskConsumer.accept(context));
+            SchedulerUtil.runTask(this.manager.owningPlugin(), () -> taskConsumer.accept(context));
         };
     }
 

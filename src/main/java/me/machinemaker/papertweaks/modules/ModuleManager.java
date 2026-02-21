@@ -3,7 +3,7 @@
  *
  * PaperTweaks, a performant replacement for the VanillaTweaks datapacks.
  *
- * Copyright (C) 2021-2025 Machine_Maker
+ * Copyright (C) 2021-2026 Machine_Maker
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,6 +31,7 @@ import java.util.Optional;
 import java.util.TreeMap;
 import java.util.function.Consumer;
 import me.machinemaker.lectern.ConfigurationNode;
+import me.machinemaker.papertweaks.utils.SchedulerUtil;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -158,7 +159,7 @@ public final class ModuleManager {
         }
         this.modulesConfig.set(this.getModule(moduleName).orElseThrow().getConfigPath(), true);
         if (Bukkit.isPrimaryThread()) {
-            Bukkit.getScheduler().runTaskAsynchronously(this.plugin, this.modulesConfig::save);
+            SchedulerUtil.runTaskAsynchronously(this.plugin, this.modulesConfig::save);
         } else {
             this.modulesConfig.save();
         }
@@ -177,9 +178,9 @@ public final class ModuleManager {
             return;
         }
         // run a full reload after disabling the module
-        this.plugin.getServer().getScheduler().runTaskLater(this.plugin, () -> {
+        SchedulerUtil.runTaskLater(this.plugin, () -> {
             this.plugin.getServer().reloadData();
-            this.plugin.getServer().getScheduler().runTaskAsynchronously(this.plugin, this.modulesConfig::save);
+            SchedulerUtil.runTaskAsynchronously(this.plugin, this.modulesConfig::save);
             msgConsumer.accept(translatable("commands.disable.success", GREEN, text(moduleName, GOLD)));
         }, 1L);
         this.modulesConfig.set(this.getModule(moduleName).orElseThrow().getConfigPath(), false);

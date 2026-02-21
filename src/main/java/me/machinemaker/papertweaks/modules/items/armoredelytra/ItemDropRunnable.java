@@ -3,7 +3,7 @@
  *
  * PaperTweaks, a performant replacement for the VanillaTweaks datapacks.
  *
- * Copyright (C) 2021-2025 Machine_Maker
+ * Copyright (C) 2021-2026 Machine_Maker
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@ import me.machinemaker.papertweaks.pdc.PDCKey;
 import me.machinemaker.papertweaks.tags.Tags;
 import me.machinemaker.papertweaks.utils.Entities;
 import me.machinemaker.papertweaks.utils.Keys;
+import me.machinemaker.papertweaks.utils.SchedulerUtil;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Location;
@@ -47,7 +48,7 @@ import org.bukkit.entity.Item;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.plugin.Plugin;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import static java.util.Objects.requireNonNullElseGet;
@@ -56,7 +57,7 @@ import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
-class ItemDropRunnable extends BukkitRunnable {
+class ItemDropRunnable implements Runnable {
 
     static final PDCKey<ItemStack> ELYTRA_ITEM = PDCKey.itemStack(Keys.legacyKey("ae.elytra_item"));
     static final PDCKey<ItemStack> CHESTPLATE_ITEM = PDCKey.itemStack(Keys.legacyKey("ae.chestplate_item"));
@@ -65,6 +66,7 @@ class ItemDropRunnable extends BukkitRunnable {
     private final LookingFor lookingFor;
     private final BiPredicate<Item, Block> itemPredicate;
     private int counter = 0;
+    private SchedulerUtil.Task task;
 
     ItemDropRunnable(final Item item, final LookingFor lookingFor) {
         this.item = item;
@@ -172,6 +174,17 @@ class ItemDropRunnable extends BukkitRunnable {
         }
 
         this.counter++;
+    }
+
+    public SchedulerUtil.Task runTaskTimer(final Plugin plugin, final long delay, final long period) {
+        this.task = SchedulerUtil.runEntityTaskTimer(plugin, this.item, t -> this.run(), null, delay, period);
+        return this.task;
+    }
+
+    private void cancel() {
+        if (this.task != null) {
+            this.task.cancel();
+        }
     }
 
     enum LookingFor {

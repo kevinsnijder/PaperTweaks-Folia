@@ -3,7 +3,7 @@
  *
  * PaperTweaks, a performant replacement for the VanillaTweaks datapacks.
  *
- * Copyright (C) 2021-2025 Machine_Maker
+ * Copyright (C) 2021-2026 Machine_Maker
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@ package me.machinemaker.papertweaks.modules.experimental.elevators;
 
 import com.google.inject.Inject;
 import me.machinemaker.papertweaks.modules.ModuleListener;
+import me.machinemaker.papertweaks.utils.SchedulerUtil;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -39,7 +40,8 @@ class ItemListener implements ModuleListener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onItemDrop(final PlayerDropItemEvent event) {
         if (event.getPlayer().hasPermission("vanillatweaks.elevators.create") && event.getItemDrop().getItemStack().getType() == Material.ENDER_PEARL) {
-            new ElevatorItemFinder(event.getItemDrop()).runTaskTimer(this.plugin, 1L, 1L);
+            final ElevatorItemFinder finder = new ElevatorItemFinder(event.getItemDrop());
+            finder.setTask(SchedulerUtil.runEntityTaskTimer(this.plugin, event.getItemDrop(), t -> finder.run(), null, 1L, 1L));
         }
     }
 }

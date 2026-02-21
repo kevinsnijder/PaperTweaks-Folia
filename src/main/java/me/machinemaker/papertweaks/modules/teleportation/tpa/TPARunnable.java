@@ -3,7 +3,7 @@
  *
  * PaperTweaks, a performant replacement for the VanillaTweaks datapacks.
  *
- * Copyright (C) 2021-2025 Machine_Maker
+ * Copyright (C) 2021-2026 Machine_Maker
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 import me.machinemaker.papertweaks.utils.runnables.TimerRunnable;
-import org.bukkit.Bukkit;
+import me.machinemaker.papertweaks.utils.SchedulerUtil;
 import org.bukkit.plugin.Plugin;
 
 @Singleton
@@ -45,7 +45,7 @@ class TPARunnable extends TimerRunnable {
         while (iter.hasNext()) {
             final Map.Entry<UUID, Request> entry = iter.next();
             if (System.currentTimeMillis() > entry.getValue().cancelAfter()) {
-                Bukkit.getScheduler().runTask(this.plugin, () -> this.manager.cancelRequest(entry.getValue()));
+                SchedulerUtil.runTask(this.plugin, () -> this.manager.cancelRequest(entry.getValue()));
                 iter.remove();
             }
         }

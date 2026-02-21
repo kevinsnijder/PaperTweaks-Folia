@@ -3,7 +3,7 @@
  *
  * PaperTweaks, a performant replacement for the VanillaTweaks datapacks.
  *
- * Copyright (C) 2020-2025 Machine_Maker
+ * Copyright (C) 2020-2026 Machine_Maker
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@ package me.machinemaker.papertweaks.modules.mobs.silencemobs;
 
 import com.google.inject.Inject;
 import me.machinemaker.papertweaks.modules.ModuleListener;
+import me.machinemaker.papertweaks.utils.SchedulerUtil;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.EventHandler;
@@ -56,7 +56,7 @@ class EntityInteractionListener implements ModuleListener {
                 if (toSilent) {
                     final Entity clickedEntity = event.getRightClicked();
                     clickedEntity.setSilent(true);
-                    Bukkit.getScheduler().runTaskLater(this.plugin, () -> clickedEntity.customName(text("silenced")), 10L);
+                    SchedulerUtil.runEntityTaskLater(this.plugin, clickedEntity, () -> clickedEntity.customName(text("silenced")), null, 10L);
                 }
             }
         }

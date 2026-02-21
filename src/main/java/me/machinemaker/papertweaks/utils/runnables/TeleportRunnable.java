@@ -3,7 +3,7 @@
  *
  * PaperTweaks, a performant replacement for the VanillaTweaks datapacks.
  *
- * Copyright (C) 2021-2025 Machine_Maker
+ * Copyright (C) 2021-2026 Machine_Maker
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,11 +20,13 @@
 package me.machinemaker.papertweaks.utils.runnables;
 
 import com.google.common.base.Preconditions;
+import me.machinemaker.papertweaks.utils.SchedulerUtil;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.plugin.Plugin;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
-public abstract class TeleportRunnable extends BukkitRunnable {
+public abstract class TeleportRunnable implements Runnable {
 
     private static final double MOVEMENT_THRESHOLD = 0.01;
 
@@ -32,6 +34,7 @@ public abstract class TeleportRunnable extends BukkitRunnable {
     protected final Location originalLoc;
     protected final Location teleportLoc;
     private long tickDelay;
+    private SchedulerUtil.Task task;
 
     protected TeleportRunnable(final Player player, final Location teleportLoc, final long tickDelay) {
         Preconditions.checkArgument(tickDelay > 0, "tickDelay must be positive");
@@ -67,6 +70,17 @@ public abstract class TeleportRunnable extends BukkitRunnable {
         }
 
         this.tickDelay--;
+    }
+
+    public final SchedulerUtil.Task runTaskTimer(final Plugin plugin, final long delay, final long period) {
+        this.task = SchedulerUtil.runEntityTaskTimer(plugin, this.player, t -> this.run(), null, delay, period);
+        return this.task;
+    }
+
+    public final void cancel() {
+        if (this.task != null) {
+            this.task.cancel();
+        }
     }
 
     public void onTeleport() {

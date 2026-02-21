@@ -3,7 +3,7 @@
  *
  * PaperTweaks, a performant replacement for the VanillaTweaks datapacks.
  *
- * Copyright (C) 2021-2025 Machine_Maker
+ * Copyright (C) 2021-2026 Machine_Maker
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,13 +26,12 @@ import com.google.inject.Inject;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import me.machinemaker.papertweaks.utils.SchedulerUtil;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.bukkit.Bukkit;
 import org.bukkit.GameRule;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitTask;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import static java.util.Objects.requireNonNull;
@@ -49,7 +48,7 @@ final class SleepContext {
 
     private final World world;
     private final List<Player> sleepingPlayers = Lists.newArrayList();
-    private final Map<Player, BukkitTask> sleepingTasks = Maps.newHashMap();
+    private final Map<Player, SchedulerUtil.Task> sleepingTasks = Maps.newHashMap();
 
     private SleepContext(final World world) {
         this.world = world;
@@ -113,7 +112,7 @@ final class SleepContext {
     public void removePlayer(final Player player) {
         this.sleepingPlayers.remove(player);
         if (this.sleepingTasks.containsKey(player)) {
-            final BukkitTask task = this.sleepingTasks.remove(player);
+            final SchedulerUtil.Task task = this.sleepingTasks.remove(player);
             if (!task.isCancelled()) {
                 task.cancel();
             }
@@ -128,18 +127,18 @@ final class SleepContext {
     public void reset(final boolean kickOut) {
         this.sleepingPlayers.forEach(player -> {
             if (kickOut) {
-                Bukkit.getScheduler().runTaskLater(plugin, () -> player.wakeup(false), 1L);
+                SchedulerUtil.runEntityTaskLater(plugin, player, () -> player.wakeup(false), null, 1L);
                 player.sendMessage(translatable("modules.multiplayer-sleep.reload.kick-out-of-bed", NamedTextColor.RED));
             }
         });
         this.sleepingPlayers.clear();
-        this.sleepingTasks.forEach((player, bukkitTask) -> {
+        this.sleepingTasks.forEach((player, task) -> {
             if (kickOut) {
-                Bukkit.getScheduler().runTaskLater(plugin, () -> player.wakeup(false), 1L);
+                SchedulerUtil.runEntityTaskLater(plugin, player, () -> player.wakeup(false), null, 1L);
                 player.sendMessage(translatable("modules.multiplayer-sleep.reload.kick-out-of-bed", NamedTextColor.RED));
             }
-            if (!bukkitTask.isCancelled()) {
-                bukkitTask.cancel();
+            if (!task.isCancelled()) {
+                task.cancel();
             }
         });
         this.sleepingTasks.clear();

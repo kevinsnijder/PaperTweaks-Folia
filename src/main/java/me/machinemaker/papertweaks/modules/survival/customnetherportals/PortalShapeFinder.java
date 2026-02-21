@@ -3,7 +3,7 @@
  *
  * PaperTweaks, a performant replacement for the VanillaTweaks datapacks.
  *
- * Copyright (C) 2021-2025 Machine_Maker
+ * Copyright (C) 2021-2026 Machine_Maker
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.function.ToIntFunction;
+import me.machinemaker.papertweaks.utils.SchedulerUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -108,7 +109,7 @@ class PortalShapeFinder {
                 return false;
             }
 
-            Bukkit.getScheduler().runTaskLater(plugin, () -> this.portalInterior.forEach(block -> {
+            SchedulerUtil.runTaskLater(plugin, () -> this.portalInterior.forEach(block -> {
                 block.setType(Material.NETHER_PORTAL);
                 this.axis.setOrientation(block);
             }), 1L);

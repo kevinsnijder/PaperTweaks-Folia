@@ -3,7 +3,7 @@
  *
  * PaperTweaks, a performant replacement for the VanillaTweaks datapacks.
  *
- * Copyright (C) 2021-2025 Machine_Maker
+ * Copyright (C) 2021-2026 Machine_Maker
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import me.machinemaker.papertweaks.modules.ModuleListener;
+import me.machinemaker.papertweaks.utils.SchedulerUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Tag;
@@ -74,7 +75,7 @@ class LeafListener implements ModuleListener {
                 continue; // https://github.com/MC-Machinations/VanillaTweaks/issues/54, datapacks modify the #minecraft:leaves block tag
             }
             SCHEDULED.add(b);
-            Bukkit.getScheduler().runTaskLater(this.plugin, () -> {
+            SchedulerUtil.runAtLocationLater(this.plugin, b.getLocation(), () -> {
                 final LeavesDecayEvent decayEvent = new LeavesDecayEvent(b);
                 Bukkit.getPluginManager().callEvent(decayEvent);
                 if (decayEvent.isCancelled()) return;

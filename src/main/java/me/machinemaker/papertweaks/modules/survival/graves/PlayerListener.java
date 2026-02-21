@@ -3,7 +3,7 @@
  *
  * PaperTweaks, a performant replacement for the VanillaTweaks datapacks.
  *
- * Copyright (C) 2021-2025 Machine_Maker
+ * Copyright (C) 2021-2026 Machine_Maker
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,6 +32,7 @@ import me.machinemaker.papertweaks.modules.ModuleListener;
 import me.machinemaker.papertweaks.pdc.DataTypes;
 import me.machinemaker.papertweaks.utils.CachedHashObjectWrapper;
 import me.machinemaker.papertweaks.utils.Keys;
+import me.machinemaker.papertweaks.utils.SchedulerUtil;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -263,10 +264,10 @@ class PlayerListener implements ModuleListener {
         if (pair.playerUUID.equals(player.getUniqueId())) {
             player.getPersistentDataContainer().remove(LAST_GRAVE_LOCATION);
         } else {
-            Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
+            SchedulerUtil.runTaskAsynchronously(this.plugin, () -> {
                 final OfflinePlayer graveOwner = Bukkit.getOfflinePlayer(pair.playerUUID);
                 if (graveOwner.getPlayer() != null) {
-                    Bukkit.getScheduler().runTask(this.plugin, () -> graveOwner.getPlayer().getPersistentDataContainer().remove(LAST_GRAVE_LOCATION));
+                    SchedulerUtil.runEntityTask(this.plugin, graveOwner.getPlayer(), () -> graveOwner.getPlayer().getPersistentDataContainer().remove(LAST_GRAVE_LOCATION), null);
                 }
             });
         }

@@ -3,7 +3,7 @@
  *
  * PaperTweaks, a performant replacement for the VanillaTweaks datapacks.
  *
- * Copyright (C) 2021-2025 Machine_Maker
+ * Copyright (C) 2021-2026 Machine_Maker
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,13 +20,16 @@
 package me.machinemaker.papertweaks.modules.survival.multiplayersleep;
 
 import java.util.function.Consumer;
+import me.machinemaker.papertweaks.utils.SchedulerUtil;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.plugin.Plugin;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
-class PlayerBedCheckRunnable extends BukkitRunnable {
+class PlayerBedCheckRunnable implements Runnable {
 
     private final Player player;
     private final Consumer<Player> sleepingCallback;
+    private SchedulerUtil.Task task;
 
     PlayerBedCheckRunnable(final Player player, final Consumer<Player> sleepingCallback) {
         this.player = player;
@@ -38,5 +41,10 @@ class PlayerBedCheckRunnable extends BukkitRunnable {
         if (this.player.getSleepTicks() >= 100) {
             this.sleepingCallback.accept(this.player);
         }
+    }
+
+    public SchedulerUtil.Task runTaskTimer(final Plugin plugin, final long delay, final long period) {
+        this.task = SchedulerUtil.runEntityTaskTimer(plugin, this.player, t -> this.run(), null, delay, period);
+        return this.task;
     }
 }

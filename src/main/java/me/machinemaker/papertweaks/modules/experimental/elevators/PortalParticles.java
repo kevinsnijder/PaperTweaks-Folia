@@ -3,7 +3,7 @@
  *
  * PaperTweaks, a performant replacement for the VanillaTweaks datapacks.
  *
- * Copyright (C) 2021-2025 Machine_Maker
+ * Copyright (C) 2021-2026 Machine_Maker
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
  */
 package me.machinemaker.papertweaks.modules.experimental.elevators;
 
+import me.machinemaker.papertweaks.utils.SchedulerUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -26,9 +27,12 @@ import org.bukkit.Tag;
 import org.bukkit.World;
 import org.bukkit.entity.Marker;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.plugin.Plugin;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
-class PortalParticles extends BukkitRunnable {
+class PortalParticles implements Runnable {
+
+    private SchedulerUtil.Task task;
 
     @Override
     public void run() {
@@ -43,6 +47,17 @@ class PortalParticles extends BukkitRunnable {
                     marker.getWorld().spawnParticle(Particle.REVERSE_PORTAL, marker.getLocation().add(0, 0.5, 0), 1, 0.25, 0, 0.25, 0.02);
                 }
             }
+        }
+    }
+
+    public SchedulerUtil.Task runTaskTimer(final Plugin plugin, final long delay, final long period) {
+        this.task = SchedulerUtil.runTaskTimer(plugin, t -> this.run(), delay, period);
+        return this.task;
+    }
+
+    public void cancel() {
+        if (this.task != null) {
+            this.task.cancel();
         }
     }
 }
