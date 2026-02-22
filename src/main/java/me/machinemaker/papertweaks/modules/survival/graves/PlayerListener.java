@@ -129,29 +129,7 @@ class PlayerListener implements ModuleListener {
         if (!player.hasPermission("vanillatweaks.playergraves") || !player.hasPermission("vanillatweaks.graves")) return;
         if (this.config.disabledWorlds.contains(world.getName())) return;
 
-        Block spawnBlock = playerLocation.getBlock();
-        if (playerLocation.getBlockY() <= world.getMinHeight()) {
-            final Location bottom = playerLocation.clone();
-            bottom.setY(world.getMinHeight());
-            spawnBlock = bottom.getBlock();
-            while (spawnBlock.getRelative(BlockFace.UP).getType() != Material.AIR) {
-                spawnBlock = spawnBlock.getRelative(BlockFace.UP);
-            }
-            if (spawnBlock.getType() == Material.AIR) {
-                spawnBlock.setType(Material.COBBLESTONE);
-            }
-        } else {
-            while (spawnBlock.getType() == Material.AIR) {
-                spawnBlock = spawnBlock.getRelative(BlockFace.DOWN);
-                if (spawnBlock.getLocation().getBlockY() < world.getMinHeight()) {
-                    spawnBlock = player.getLocation().getBlock().getRelative(BlockFace.DOWN);
-                    spawnBlock.setType(Material.COBBLESTONE);
-                    break;
-                }
-            }
-        }
-
-        final Location graveLocation = spawnBlock.getRelative(BlockFace.UP).getLocation().add(0.5, 0, 0.5);
+        // Capture data from event before scheduling
         final PlayerInventory inventory = player.getInventory();
         final List<ItemStack> drops = event.getDrops();
         final Map<CachedHashObjectWrapper<ItemStack>, MutableInt> cachedDrops = toCachedMapCount(drops);
@@ -162,30 +140,63 @@ class PlayerListener implements ModuleListener {
         cachedDrops.forEach((wrapper, count) ->
                 drops.addAll(Collections.nCopies(count.intValue(), wrapper.item))
         );
-
-        if (this.config.graveLocating) {
-            player.sendMessage(translatable("modules.graves.last-grave-location", GOLD, translatable("modules.graves.location-format", YELLOW, text(graveLocation.getBlockX()), text(graveLocation.getBlockY()), text(graveLocation.getBlockZ())), text(graveLocation.getWorld().getName(), YELLOW)));
-        }
-
-        final Long timestamp = System.currentTimeMillis();
-        final ArmorStand block = (ArmorStand) world.spawnEntity(graveLocation.clone().subtract(-0.1, 1.77, 0), EntityType.ARMOR_STAND);
-        this.setupStand(block, Material.PODZOL);
-        block.getPersistentDataContainer().set(PLAYER_UUID, DataTypes.UUID, player.getUniqueId());
-        block.getPersistentDataContainer().set(TIMESTAMP, PersistentDataType.LONG, timestamp);
-        final ArmorStand headstone = (ArmorStand) world.spawnEntity(graveLocation.clone().subtract(0.3, 1.37, 0), EntityType.ARMOR_STAND);
-        final PersistentDataContainer headstonePDC = headstone.getPersistentDataContainer();
-        if (event.getDroppedExp() > 0 && this.config.xpCollection) {
-            headstonePDC.set(PLAYER_EXPERIENCE, PersistentDataType.INTEGER, event.getDroppedExp());
+        
+        final int droppedExp = event.getDroppedExp();
+        if (droppedExp > 0 && this.config.xpCollection) {
             event.setDroppedExp(0);
         }
-        headstonePDC.set(PLAYER_UUID, DataTypes.UUID, player.getUniqueId());
-        headstonePDC.set(PLAYER_ALL_CONTENTS, DataTypes.ITEMSTACK_ARRAY, allContents.toArray(new ItemStack[0]));
-        headstonePDC.set(TIMESTAMP, PersistentDataType.LONG, timestamp);
-        this.setupStand(headstone, Graves.GRAVESTONES.get(0));
-        Collections.shuffle(Graves.GRAVESTONES);
-        headstone.customName(text(player.getName()));
-        headstone.setCustomNameVisible(true);
-        player.getPersistentDataContainer().set(LAST_GRAVE_LOCATION, DataTypes.LOCATION, headstone.getLocation());
+        
+        final List<@Nullable ItemStack> finalAllContents = allContents;
+        final Long timestamp = System.currentTimeMillis();
+        
+        // All world interactions must happen on the correct region thread for Folia
+        SchedulerUtil.runEntityTask(this.plugin, player, () -> {
+            Block spawnBlock = playerLocation.getBlock();
+            if (playerLocation.getBlockY() <= world.getMinHeight()) {
+                final Location bottom = playerLocation.clone();
+                bottom.setY(world.getMinHeight());
+                spawnBlock = bottom.getBlock();
+                while (spawnBlock.getRelative(BlockFace.UP).getType() != Material.AIR) {
+                    spawnBlock = spawnBlock.getRelative(BlockFace.UP);
+                }
+                if (spawnBlock.getType() == Material.AIR) {
+                    spawnBlock.setType(Material.COBBLESTONE);
+                }
+            } else {
+                while (spawnBlock.getType() == Material.AIR) {
+                    spawnBlock = spawnBlock.getRelative(BlockFace.DOWN);
+                    if (spawnBlock.getLocation().getBlockY() < world.getMinHeight()) {
+                        spawnBlock = player.getLocation().getBlock().getRelative(BlockFace.DOWN);
+                        spawnBlock.setType(Material.COBBLESTONE);
+                        break;
+                    }
+                }
+            }
+
+            final Location graveLocation = spawnBlock.getRelative(BlockFace.UP).getLocation().add(0.5, 0, 0.5);
+            
+            if (this.config.graveLocating) {
+                player.sendMessage(translatable("modules.graves.last-grave-location", GOLD, translatable("modules.graves.location-format", YELLOW, text(graveLocation.getBlockX()), text(graveLocation.getBlockY()), text(graveLocation.getBlockZ())), text(graveLocation.getWorld().getName(), YELLOW)));
+            }
+            
+            final ArmorStand block = (ArmorStand) world.spawnEntity(graveLocation.clone().subtract(-0.1, 1.77, 0), EntityType.ARMOR_STAND);
+            this.setupStand(block, Material.PODZOL);
+            block.getPersistentDataContainer().set(PLAYER_UUID, DataTypes.UUID, player.getUniqueId());
+            block.getPersistentDataContainer().set(TIMESTAMP, PersistentDataType.LONG, timestamp);
+            final ArmorStand headstone = (ArmorStand) world.spawnEntity(graveLocation.clone().subtract(0.3, 1.37, 0), EntityType.ARMOR_STAND);
+            final PersistentDataContainer headstonePDC = headstone.getPersistentDataContainer();
+            if (droppedExp > 0 && this.config.xpCollection) {
+                headstonePDC.set(PLAYER_EXPERIENCE, PersistentDataType.INTEGER, droppedExp);
+            }
+            headstonePDC.set(PLAYER_UUID, DataTypes.UUID, player.getUniqueId());
+            headstonePDC.set(PLAYER_ALL_CONTENTS, DataTypes.ITEMSTACK_ARRAY, finalAllContents.toArray(new ItemStack[0]));
+            headstonePDC.set(TIMESTAMP, PersistentDataType.LONG, timestamp);
+            this.setupStand(headstone, Graves.GRAVESTONES.get(0));
+            Collections.shuffle(Graves.GRAVESTONES);
+            headstone.customName(text(player.getName()));
+            headstone.setCustomNameVisible(true);
+            player.getPersistentDataContainer().set(LAST_GRAVE_LOCATION, DataTypes.LOCATION, headstone.getLocation());
+        }, null);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
