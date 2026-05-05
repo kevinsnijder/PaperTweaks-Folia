@@ -23,7 +23,7 @@ repositories {
     }
 }
 
-val paperApi: Provider<String> = libs.versions.minecraft.map { "io.papermc.paper:paper-api:$it-R0.1-SNAPSHOT" }
+val paperApi: Provider<String> = libs.versions.minecraft.map { "io.papermc.paper:paper-api:$it" }
 dependencies {
     compileOnly(paperApi)
 
@@ -72,7 +72,9 @@ dependencies {
 }
 
 java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(21))
+    toolchain.languageVersion.set(JavaLanguageVersion.of(25))
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
 }
 
 spotless {
@@ -122,7 +124,7 @@ tasks {
             add("-parameters")
             add("-Xlint")
         }
-        options.release.set(21)
+        options.release.set(25)
     }
 
     test {
